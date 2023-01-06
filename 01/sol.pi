@@ -1,0 +1,97 @@
+#include <sys/file.pi>
+#include <sys/args.pi>
+#include <console.pi>
+#include <struct/list.pi>
+#include <convert.pi>
+#include <order.pi>
+#include "sort.pi"
+
+global PrintResults($list(Int)(2 of 1 pure,2) cals) // Print puzzle results {{{
+( msort=new mergesort(2 of 2);
+  msort<<Int;
+  msort[1]<<stdorder_Int<<cals;
+  msort[1]>>done;
+  msort[1]<<^length;
+  msort[1]>>n;
+  msort[1]<<^get<<n-1;
+  msort[1]>>
+  {^err: 
+    msort[1]>>err;
+    msort[1]<<^end;
+   ^val:
+    msort[1]>>res1;
+    // Print first solution as the maximum calories (last element of sorted list)
+    c=new console(2 of 2);
+    c[1]<<^str<<"Result1: "<<^int<<res1<<^nl<<^end;
+    msort[1]<<^get<<n-2;
+    msort[1]>>
+    {^err: 
+      msort[1]>>err;
+      msort[1]<<^end;
+     ^val:
+      msort[1]>>res2;
+      msort[1]<<^get<<n-3;
+      msort[1]>>
+      {^err: 
+        msort[1]>>err;
+        msort[1]<<^end;
+       ^val:
+        msort[1]>>res3;
+        c=new console(2 of 2);
+        // Print second solution as the sum of the three larges calories
+        c[1]<<^str<<"Result2: "<<^int<<res1+res2+res3<<^nl<<^end;
+        msort[1]<<^end;
+      }
+    }
+  }
+) // }}}
+
+local ReadCals($infile(2 of 1,2) f, $list(Int)(2 of 1 pure,2) dst, Int cur) // Read, convert and summarize the calories for each elf {{{
+( f[1]<<^Line;
+  f[1]>>
+  {^None: // EOF
+    if cur=0
+    then PrintResults(dst);
+    else dst[1]<<^snoc<<cur;
+         PrintResults(dst);
+   ^Some:
+    f[1]>>line;
+    if line=""
+    then dst[1]<<^snoc<<cur;
+         ReadCals(f,dst,0);
+    else Int v=0;
+         STRING2INT(line,v);
+         ReadCals(f,dst,cur+v);
+  }
+) // }}}
+
+local ProcessFile(String fname) // Open file and call ReadCals {{{
+(
+  f=new file(2 of 2);
+  f[1]<<^Read<<fname;
+  f[1]>>
+  {^Error:
+    f[1]>>err;
+    c=new console(2 of 2);
+    c[1]<<^str<<"Error unable to open file "<<^str<<fname<<^nl
+        <<^str<<err<<^nl
+        <<^end;
+   ^OK:
+    cals=new list(2 of 2);
+    cals<<Int;
+    ReadCals(f,cals,0);
+  }
+) // }}}
+
+// Parse argument as filename, and default to data.txt {{{
+a=new args(2 of 2);
+a[1]<<^arg<<1;
+a[1]>>
+{^none:
+  a[1]<<^end;
+  ProcessFile("data.txt");
+ ^some:
+  a[1]>>fname;
+  a[1]<<^end;
+  ProcessFile(fname);
+} // }}}
