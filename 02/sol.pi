@@ -1,0 +1,66 @@
+#include <sys/file.pi>
+#include <sys/args.pi>
+#include <console.pi>
+
+local CalcStrategy($infile(2 of 1,2) f, Int sum1, Int sum2) // Read, convert and summarize the calories for each elf {{{
+( f[1]<<^Line;
+  f[1]>>
+  {^None: // EOF
+    c=new console(2 of 2);
+    c[1]<<^str<<"Sum1: "<<^int<<sum1<<^nl;
+    c[1]<<^str<<"Sum2: "<<^int<<sum2<<^nl<<^end;
+   ^Some:
+    f[1]>>line;
+    if line="A X"
+    then CalcStrategy(f,sum1+4,sum2+3);
+    else if line="A Y"
+    then CalcStrategy(f,sum1+8,sum2+4);
+    else if line="A Z"
+    then CalcStrategy(f,sum1+3,sum2+8);
+    else if line="B X"
+    then CalcStrategy(f,sum1+1,sum2+1);
+    else if line="B Y"
+    then CalcStrategy(f,sum1+5,sum2+5);
+    else if line="B Z"
+    then CalcStrategy(f,sum1+9,sum2+9);
+    else if line="C X"
+    then CalcStrategy(f,sum1+7,sum2+2);
+    else if line="C Y"
+    then CalcStrategy(f,sum1+2,sum2+6);
+    else if line="C Z"
+    then CalcStrategy(f,sum1+6,sum2+7);
+    else
+         c = new console(2 of 2);
+         c[1]<<^str<<"Unknown strategy: "<<^str<<line<<^end;
+         CalcStrategy(f,sum1,sum2);
+  }
+) // }}}
+
+local ProcessFile(String fname) // Open file and call CalcStrategy {{{
+(
+  f=new file(2 of 2);
+  f[1]<<^Read<<fname;
+  f[1]>>
+  {^Error:
+    f[1]>>err;
+    c=new console(2 of 2);
+    c[1]<<^str<<"Error unable to open file "<<^str<<fname<<^nl
+        <<^str<<err<<^nl
+        <<^end;
+   ^OK:
+    CalcStrategy(f,0,0);
+  }
+) // }}}
+
+// Parse argument as filename, and default to data.txt {{{
+a=new args(2 of 2);
+a[1]<<^arg<<1;
+a[1]>>
+{^none:
+  a[1]<<^end;
+  ProcessFile("data.txt");
+ ^some:
+  a[1]>>fname;
+  a[1]<<^end;
+  ProcessFile(fname);
+} // }}}
