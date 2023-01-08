@@ -2,7 +2,7 @@
 #include <sys/args.pi>
 #include <console.pi>
 
-local CalcStrategy($infile(2 of 1,2) f, Int sum1, Int sum2) // Read, convert and summarize the calories for each elf {{{
+local CalcStrategy($infile(2 of 1,2) f, Int sum1, Int sum2) // Read, inerpret and accumulate the scores for each round {{{
 ( f[1]<<^Line;
   f[1]>>
   {^None: // EOF
@@ -29,8 +29,7 @@ local CalcStrategy($infile(2 of 1,2) f, Int sum1, Int sum2) // Read, convert and
     then CalcStrategy(f,sum1+2,sum2+6);
     else if line="C Z"
     then CalcStrategy(f,sum1+6,sum2+7);
-    else
-         c = new console(2 of 2);
+    else c = new console(2 of 2);
          c[1]<<^str<<"Unknown strategy: "<<^str<<line<<^end;
          CalcStrategy(f,sum1,sum2);
   }
